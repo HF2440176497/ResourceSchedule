@@ -4,20 +4,12 @@
 #include <memory>
 #include <future>
 
+#include "infer_resource.hpp"
 #include "batching_stage.hpp"
 #include "batching_done_stage.hpp"
 #include "infer_thread_pool.hpp"
+#include "infer_trans_data_helper.hpp"
 
-
-class ResultWaitingCard {
- public:
-  explicit ResultWaitingCard(std::shared_ptr<std::promise<void>> ret_promise) : promise_(ret_promise) {}
-  void WaitForCall() {  // wait for set_value
-    promise_->get_future().share().get();
-  }
- private:
-  std::shared_ptr<std::promise<void>> promise_;
-};  // class ResultWaitingCard
 
 uint32_t batchsize = 4;
 
@@ -36,6 +28,7 @@ std::vector<std::shared_ptr<BatchingDoneStage>> batching_done_stages_ =
 
 BatchingDoneInput batched_finfos_{ };
 auto tp_ = std::make_shared<InferThreadPool>();
+auto trans_helper_ = std::make_shared<InferTransDataHelper>(batchsize);
 
 int64_t current_ms() {
   return std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -79,12 +72,16 @@ int main() {
   mlu_input_res_->Init();
   mlu_output_res_->Init();
 
-  int num_frames = 20;  // batch num == 5
-  for (int i = 0; i < num_frames; i++) {
-    std::shared_ptr<FrameInfo> finfo = std::make_shared<FrameInfo>();
-    finfo->time_stamp_ = current_ms();
-    FeedData(finfo);
+  int num_batch = 5;  // batch num == 5
+  for (int i = 0; i < num_batch; i++) {
+    for (int j = 0; j < batchsize; ++j) {
+      std::shared_ptr<FrameInfo> finfo = std::make_shared<FrameInfo>();
+      finfo->batch_index = i;
+      finfo->item_index = j;
+      ResultWaitingCard card = FeedData(finfo);
+      trans_helper_->SubmitData(std::make_pair(finfo, card));
+    }
   }
-
   tp_->Destroy();
+  trans_helper_.reset();
 }

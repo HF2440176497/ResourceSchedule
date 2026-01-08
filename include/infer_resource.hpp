@@ -6,6 +6,21 @@
 
 #include "queuing_server.hpp"
 
+class FrameInfo {
+public:
+    uint32_t batch_index = 0;
+    uint32_t item_index = 0;
+};
+
+class ResultWaitingCard {
+public:
+    explicit ResultWaitingCard(std::shared_ptr<std::promise<void>> ret_promise) : promise_(ret_promise) {}
+    void WaitForCall() {  // wait for set_value
+        promise_->get_future().share().get();
+    }
+private:
+    std::shared_ptr<std::promise<void>> promise_;
+};
 
 template <typename RetT>
 class InferResource : public QueuingServer {

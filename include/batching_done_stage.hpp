@@ -81,9 +81,9 @@ class H2DBatchingDoneStage : public BatchingDoneStage {
 
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
       assert(finfos.size() == batchsize_);
-
       for (uint32_t bidx = 0; bidx < batchsize_; bidx++) {
-        std::cout << "H2DBatchingDoneStage BatchingDone: " << finfos[bidx].first->time_stamp_ << std::endl;
+        std::cout << "H2DBatchingDoneStage, bidx: " << bidx
+            << "; [" << finfos[bidx].first->batch_index << ", " << finfos[bidx].first->item_index << "] " << std::endl;
       }
       this->cpu_input_res_->DeallingDone();
       this->mlu_input_res_->DeallingDone();
@@ -119,7 +119,8 @@ class InferBatchingDoneStage : public BatchingDoneStage {
       std::this_thread::sleep_for(std::chrono::milliseconds(800));
       assert(finfos.size() == batchsize_);
       for (uint32_t bidx = 0; bidx < batchsize_; bidx++) {
-        std::cout << "InferBatchingDoneStage BatchingDone: " << finfos[bidx].first->time_stamp_ << std::endl;
+        std::cout << "InferBatchingDoneStage, bidx: " << bidx
+            << "; [" << finfos[bidx].first->batch_index << ", " << finfos[bidx].first->item_index << "] " << std::endl;
       }
       this->mlu_input_res_->DeallingDone();
       this->mlu_output_res_->DeallingDone();
@@ -154,7 +155,8 @@ class D2HBatchingDoneStage : public BatchingDoneStage {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
       assert(finfos.size() == batchsize_);
       for (uint32_t bidx = 0; bidx < batchsize_; bidx++) {
-        std::cout << "D2HBatchingDoneStage BatchingDone: " << finfos[bidx].first->time_stamp_ << std::endl;
+        std::cout << "D2HBatchingDoneStage, bidx: " << bidx
+            << "; [" << finfos[bidx].first->batch_index << ", " << finfos[bidx].first->item_index << "] " << std::endl;
       }
 
       this->mlu_output_res_->DeallingDone();
@@ -192,7 +194,8 @@ class PostprocessingBatchingDoneStage : public BatchingDoneStage {
           QueuingTicket cor_ticket = cpu_output_res_ticket;
           IOResValue cpu_output_value = this->cpu_output_res_->WaitResourceByTicket(&cor_ticket);
           std::this_thread::sleep_for(std::chrono::milliseconds(50));
-          std::cout << "PostprocessingBatchingDoneStage, bidx: " << bidx << ", time_stamp: " << finfo.first->time_stamp_ << std::endl;
+          std::cout << "PostprocessingBatchingDoneStage, bidx: " << bidx
+                << "; [" << finfo.first->batch_index << ", " << finfo.first->item_index << "] " << std::endl;
           this->cpu_output_res_->DeallingDone();
           return 0;
         });

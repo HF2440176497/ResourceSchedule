@@ -34,5 +34,6 @@ std::shared_ptr<InferTask> IOBatchingStage::Batching(std::shared_ptr<FrameInfo> 
 
 void IOBatchingStage::ProcessOneFrame(std::shared_ptr<FrameInfo> finfo, uint32_t bidx, IOResValue& value) {
   std::this_thread::sleep_for(std::chrono::milliseconds(50));
-  std::cout << "IOBatchingStage, bidx: " << bidx << ", time_stamp: " << finfo->time_stamp_ << std::endl;
+  std::cout << "IOBatchingStage, bidx: " << bidx 
+      << "; ["<< finfo->batch_index << ", " << finfo->item_index << "] " << std::endl;
 }

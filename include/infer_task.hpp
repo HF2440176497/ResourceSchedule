@@ -30,11 +30,6 @@
 #include <stdexcept>
 
 
-class FrameInfo {
-public:
-  uint64_t time_stamp_ = 0;
-};
-
 class InferTask;
 using InferTaskSptr = std::shared_ptr<InferTask>;
 
