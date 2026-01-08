@@ -59,7 +59,7 @@ class IOResource : public InferResource<IOResValue> {
   }
   IOResValue Allocate(uint32_t batchsize) {
     IOResValue res;
-    res.datas.reserve(1);
+    res.datas.resize(1);
     res.datas[0].datas = std::vector<int>(batchsize, 0);
     res.datas[0].batchsize = batchsize;
     return res;

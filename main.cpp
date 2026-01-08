@@ -72,16 +72,22 @@ int main() {
   mlu_input_res_->Init();
   mlu_output_res_->Init();
 
-  int num_batch = 5;  // batch num == 5
+  int num_batch = 4;
   for (int i = 0; i < num_batch; i++) {
     for (int j = 0; j < batchsize; ++j) {
       std::shared_ptr<FrameInfo> finfo = std::make_shared<FrameInfo>();
       finfo->batch_index = i;
       finfo->item_index = j;
       ResultWaitingCard card = FeedData(finfo);
+
+      // TODO: 人为制造的延迟 便于打印
+      if (i == 0 && j <= 1) {
+          std::this_thread::sleep_for(std::chrono::milliseconds(50));
+      }
       trans_helper_->SubmitData(std::make_pair(finfo, card));
     }
   }
+  std::this_thread::sleep_for(std::chrono::seconds(10));
   tp_->Destroy();
   trans_helper_.reset();
 }
